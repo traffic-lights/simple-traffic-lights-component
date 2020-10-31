@@ -5,7 +5,7 @@
 ```
     cd simple-traffic-lights-component 
 ```
-4. create folder build and enter it:
+4. create build folder and enter it:
 ```
     mkdir build && cd build
 ```
