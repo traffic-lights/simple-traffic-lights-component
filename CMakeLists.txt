@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Torch REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR}/libraries/mqtt_cpp/include)
-include_directories(${PROJECT_SOURCE_DIR}/libraries/json/include)
+include_directories(${PROJECT_SOURCE_DIR}/libraries/include)
 
 add_executable(
     ${PROJECT_NAME} 

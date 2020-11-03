@@ -5,20 +5,30 @@
 ```
     cd simple-traffic-lights-component 
 ```
-4. create build folder and enter it:
+5. create libraries folder:
+```
+    mkdir libraries
+```
+6. install [redboltz/mqtt_cpp](https://github.com/nlohmann/json) to libraries folder:
+```
+    cd libraries && git clone https://github.com/redboltz/mqtt_cpp.git
+```
+7. install [nlohmann/json](https://github.com/redboltz/mqtt_cpp) to libraries folder:
+    Download and uznip include.zip from latest release of nlohmann/json.
+8. create build folder and enter it:
 ```
     mkdir build && cd build
 ```
-5. create makefiles:
+9. create makefiles:
 ```
     cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
 ```
-6. build target:
+10. build target:
 ```
     cmake --build . --config Release
 ```
-7. execute binary file:
+11. execute binary file:
 ```
-    ./simple-traffic-lights-component
+    ./simple-traffic-lights-component model_name mqtt_broker_address
 ```
 
