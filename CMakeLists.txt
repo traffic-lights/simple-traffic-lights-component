@@ -12,6 +12,7 @@ add_executable(
     ${PROJECT_NAME} 
     src/main.cpp
     src/model/Model.cpp
+    src/controller/TLSController.cpp
     )
 
 target_link_libraries(
