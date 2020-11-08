@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(Torch REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/libraries/mqtt_cpp/include)
+find_library(RABBITMQCPP SimpleAmqpClient)
+
 include_directories(${PROJECT_SOURCE_DIR}/libraries/include)
 
 add_executable(
@@ -18,4 +19,6 @@ add_executable(
 target_link_libraries(
     ${PROJECT_NAME}
     ${TORCH_LIBRARIES}
+    ${RABBITMQCPP}
+    pthread
     )
