@@ -15,6 +15,7 @@ private:
     struct Message
     {
         std::string sender;
+        std::string queue_name;
         std::vector<float> input;
 
         Message(std::string content) : sender{}, input{}
