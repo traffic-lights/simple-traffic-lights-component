@@ -6,13 +6,13 @@
 
 int main(int argc, const char *argv[])
 {
-    if (argc != 3)
+    if (argc != 2)
     {
-        std::cout << argv[0] << " model host" << std::endl;
+        std::cout << argv[0] << " json_config_path" << std::endl;
         return -1;
     }
 
-    TLSController *controller = new TLSController(argv[1], argv[2]);
+    TLSController *controller = new TLSController(argv[1]);
     controller->run();
 
     return 0;

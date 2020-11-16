@@ -1,11 +1,12 @@
 #pragma once
 
 #include <torch/script.h>
+#include "../exceptions/Exceptions.h"
 
 class Model
 {
 public:
-    Model(const std::string path)
+    Model(const std::string path, int input_size) : input_size{input_size}
     {
         try
         {
@@ -26,5 +27,6 @@ public:
     int forward(std::vector<float> input);
 
 private:
+    const int input_size;
     torch::jit::script::Module model;
 };
