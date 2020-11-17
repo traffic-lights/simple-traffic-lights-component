@@ -9,23 +9,30 @@ TLSController::TLSController(std::string config_path)
     auto j = json::parse(buffer.str());
 
     auto address = j["broker-address"].get<std::string>();
+    auto vhost = j["vhost-name"].get<std::string>();
+    auto username = j["username"].get<std::string>();
+    auto password = j["password"].get<std::string>();
     auto model_path = j["model-path"].get<std::string>();
     auto input_size = j["input-size"].get<int>();
-    queue_name = j["queue-name"].get<std::string>();
+
+    requests_queue = j["requests-queue"].get<std::string>();
+    responses_queue = j["responses-queue"].get<std::string>();
+    responses_exchange = j["responses-exchange"].get<std::string>();
 
     model = new Model(model_path, input_size);
 
-    connection = AmqpClient::Channel::Create(address, 5672, "test", "test", "test");
-    std::cout << "connected to: " << address << " queue name: " << queue_name << std::endl;
+    connection = AmqpClient::Channel::Create(address, 5672, username, password, vhost);
+    std::cout << "connected to: " << address << std::endl;
 }
 
 void TLSController::run()
 {
-    connection->DeclareQueue(queue_name, false, false, false);
+    connection->DeclareQueue(requests_queue, false, false, false, false);
+    connection->DeclareQueue(responses_queue, false, false, false, false);
 
-    connection->DeclareExchange("responses", AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, false, false, false);
+    connection->DeclareExchange(responses_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false);
 
-    auto consumer_tag = connection->BasicConsume(queue_name, "", true, false, false);
+    auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false);
 
     while (true)
     {
@@ -59,7 +66,7 @@ void TLSController::run()
 
         auto response = AmqpClient::BasicMessage::Create(message->getPayload());
 
-        connection->BasicPublish("responses", sender, response);
+        connection->BasicPublish(responses_exchange, sender, response);
         connection->BasicAck(envelope->GetDeliveryInfo(), false);
 
         delete message;

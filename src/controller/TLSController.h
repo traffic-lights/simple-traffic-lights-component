@@ -25,7 +25,7 @@ private:
         InputParser(std::string content) : input{}
         {
             auto j_content = json::parse(content);
-            auto last_action = j_content["last_actions"].get<float>();
+            auto last_action = j_content["last_action"].get<float>();
             auto in_states = j_content["in_states"].get<std::vector<float>>();
             auto out_states = j_content["out_states"].get<std::vector<float>>();
 
@@ -47,7 +47,9 @@ private:
 
     AmqpClient::Channel::ptr_t connection;
 
-    std::string queue_name;
+    std::string requests_queue;
+    std::string responses_queue;
+    std::string responses_exchange;
 
     Model *model;
 };
