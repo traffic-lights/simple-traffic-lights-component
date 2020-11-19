@@ -19,12 +19,12 @@
     unzip include.zip -d path_to_libraries_folder
 ```
 9. install SimpleAmqpClient library:
-9.1. install pre-requisites:
-9.1.1. install [boost](https://www.boost.org/users/history/version_1_73_0.html)
-9.1.2. install [rabbitmq-c](https://github.com/alanxz/rabbitmq-c)
-9.2. download latest SimpleAmqpClient release from: https://github.com/alanxz/SimpleAmqpClient/releases
-9.3. unzip archive to some folder
-9.4. install SimpleAmqpClient to standard path following Build procedure:
+    1. install pre-requisites:
+        1. install [boost](https://www.boost.org/users/history/version_1_73_0.html)
+        2. install [rabbitmq-c](https://github.com/alanxz/rabbitmq-c)
+    2. download latest SimpleAmqpClient release from: https://github.com/alanxz/SimpleAmqpClient/releases
+    3. unzip archive to some folder
+    4. install SimpleAmqpClient to standard path following Build procedure:
 ```
     mkdir simpleamqpclient-build
     cd simpleamqpclient-build
