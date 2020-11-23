@@ -16,8 +16,6 @@ TLSController::TLSController(std::string config_path)
     auto input_size = j["input-size"].get<int>();
 
     requests_queue = j["requests-queue"].get<std::string>();
-    responses_queue = j["responses-queue"].get<std::string>();
-    responses_exchange = j["responses-exchange"].get<std::string>();
 
     model = new Model(model_path, input_size);
 
@@ -28,9 +26,6 @@ TLSController::TLSController(std::string config_path)
 void TLSController::run()
 {
     connection->DeclareQueue(requests_queue, false, false, false, false);
-    connection->DeclareQueue(responses_queue, false, false, false, false);
-
-    connection->DeclareExchange(responses_exchange, AmqpClient::Channel::EXCHANGE_TYPE_TOPIC, false, false, false);
 
     auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false);
 
@@ -66,7 +61,7 @@ void TLSController::run()
 
         auto response = AmqpClient::BasicMessage::Create(message->getPayload());
 
-        connection->BasicPublish(responses_exchange, sender, response);
+        connection->BasicPublish("", sender, response);
         connection->BasicAck(envelope->GetDeliveryInfo(), false);
 
         delete message;

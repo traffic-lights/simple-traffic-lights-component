@@ -48,8 +48,6 @@ private:
     AmqpClient::Channel::ptr_t connection;
 
     std::string requests_queue;
-    std::string responses_queue;
-    std::string responses_exchange;
 
     Model *model;
 };

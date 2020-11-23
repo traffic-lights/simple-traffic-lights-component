@@ -57,8 +57,6 @@
         "username": String,
         "password": String,
         "requests-queue": String,
-        "responses-queue": String,
-        "responses-exchange": String,
         "model-path": String,
         "input-size": Integer
     }
