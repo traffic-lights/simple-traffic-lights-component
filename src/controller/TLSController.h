@@ -1,6 +1,7 @@
 #include <nlohmann/json.hpp>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 #include <exception>
+#include <cstdlib>
 
 #include "../model/Model.h"
 #include "../message/Message.h"
@@ -11,10 +12,12 @@
 
 using json = nlohmann::json;
 
+constexpr char CONFIG_PATH_VARIABLE[] {"JSON_CONFIG_PATH"};
+
 class TLSController
 {
 public:
-    TLSController(std::string config_path);
+    TLSController();
     void run();
 
 private:
