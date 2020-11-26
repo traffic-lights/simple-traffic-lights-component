@@ -38,11 +38,11 @@
 ```
 2. use cmake to generate makefiles:
 ```
-    cmake -DCMAKE_PREFIX_PATH=../libraries/libtorch ..
+    cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
 ```
 3. use cmake to build project:
 ```
-    cmake --build Release . --config Release
+    cmake --build . --config Release
 ```
 ### running
 1. execute library with valid json config file:
