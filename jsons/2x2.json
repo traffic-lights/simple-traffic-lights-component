@@ -1,0 +1,9 @@
+{
+    "broker-address" : "wojsik.codes",
+    "vhost-name": "traffily",
+    "username": "2x2_server",
+    "password": "tajnehaslo",
+    "requests-queue": "2x2_requests",
+    "model-path": "models/2x2.pt",
+    "input-size": 13
+}

@@ -8,6 +8,7 @@ find_package(Torch REQUIRED)
 find_library(RABBITMQCPP SimpleAmqpClient)
 
 include_directories(${PROJECT_SOURCE_DIR}/libraries/include)
+include_directories("/usr/local/include/")
 
 add_executable(
     ${PROJECT_NAME} 
