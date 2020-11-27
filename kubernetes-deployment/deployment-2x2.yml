@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-servers-2x2-deployment
+  labels:
+    app: traffic-servers-2x2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: traffic-server-2x2
+  template:
+    metadata:
+      labels:
+        app: traffic-server-2x2
+    spec:
+      containers:
+      - name: traffic-server-2x2
+        image: kaszper/traffic-component:latest
+        imagePullPolicy: Always

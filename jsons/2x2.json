@@ -1,5 +1,5 @@
 {
-    "broker-address" : "wojsik.codes",
+    "broker-address" : "rabbitmq.traffic.svc.cluster.local",  
     "vhost-name": "traffily",
     "username": "2x2_server",
     "password": "tajnehaslo",
