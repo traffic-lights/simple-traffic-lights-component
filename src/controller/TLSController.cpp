@@ -1,7 +1,16 @@
 #include "TLSController.h"
 
-TLSController::TLSController(std::string config_path)
+TLSController::TLSController()
 {
+    auto config_path = std::getenv(CONFIG_PATH_VARIABLE);
+
+    if(!config_path){
+        std::cerr << "missing environment variable: " << CONFIG_PATH_VARIABLE << std::endl;
+        exit(1);
+    }
+    
+    std::cout << "path to config file: " << config_path << std::endl;
+
     std::ifstream file(config_path);
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -60,6 +69,8 @@ void TLSController::run()
         }
 
         auto response = AmqpClient::BasicMessage::Create(message->getPayload());
+
+        std::cout << "got message from: " << sender << std::endl;
 
         connection->BasicPublish("", sender, response);
         connection->BasicAck(envelope->GetDeliveryInfo(), false);
