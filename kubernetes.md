@@ -1,6 +1,12 @@
-## EFEF
+This uses kind as a kubernetes backend.
 
-agera
+
+### Create cluster:
+Create 3 nodes
+`kind create cluster --config kind-config.yml`
+
+
+
 ### Create namespace
 
 `kubectl create -f namespace.json`
@@ -11,9 +17,11 @@ https://kubernetes.io/docs/tasks/administer-cluster/namespaces-walkthrough/
 
 ```
 kubectl config set-context traffic --namespace=traffic \
-  --cluster=docker-desktop \
-  --user=docker-desktop
+  --cluster=kind-kind \
+  --user=kind-kind
 ```
+
+`kubectl config use-context traffic`
 
 ### What is LoadBalancer DNS address?
 https://github.com/kubernetes/dns/blob/master/docs/specification.md

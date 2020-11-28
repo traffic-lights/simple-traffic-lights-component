@@ -1,7 +1,13 @@
 #include "TLSController.h"
-
+using namespace AmqpClient;
+using namespace std;
 TLSController::TLSController()
 {
+    connect();
+}
+
+void TLSController::connect() {
+    std::cout << "connect" << std::endl;
     auto config_path = std::getenv(CONFIG_PATH_VARIABLE);
 
     if(!config_path){
@@ -33,48 +39,67 @@ TLSController::TLSController()
 }
 
 void TLSController::run()
-{
-    connection->DeclareQueue(requests_queue, false, false, false, false);
+{   
+    AmqpClient::Table qTable;
+    qTable.insert(TableEntry(TableKey("x-queue-type"), TableValue("quorum")));
+    connection->DeclareQueue(
+        requests_queue, 
+        false, // passive
+        true,  // durable
+        false, // exclusive
+        false, // auto_delete
+        qTable
+    );
 
-    auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false);
+    auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
 
     while (true)
-    {
-        auto envelope = connection->BasicConsumeMessage(consumer_tag);
-        auto content = envelope->Message()->Body();
-        auto sender = envelope->Message()->ReplyTo();
+    {   try {
+            auto envelope = connection->BasicConsumeMessage(consumer_tag);
+            auto content = envelope->Message()->Body();
+            auto sender = envelope->Message()->ReplyTo();
 
-        Message *message = new DefaultMessage();
+            Message *message = new DefaultMessage();
 
-        try
-        {
-            InputParser *parser = new InputParser(content);
+            try
+            {
+                InputParser *parser = new InputParser(content);
 
-            auto prediction = model->forward(parser->input);
-            message = new ValidMessage(0, prediction);
+                auto prediction = model->forward(parser->input);
+                message = new ValidMessage(0, prediction);
 
-            delete parser;
+                delete parser;
+            }
+            catch (SizeMissmatchException &e)
+            {
+                message = new ErrorMessage(1, e.what());
+            }
+            catch (InputSizeMissmatchException &e)
+            {
+                message = new ErrorMessage(2, e.what());
+            }
+            catch (nlohmann::detail::type_error &e)
+            {
+                message = new ErrorMessage(3, "input message data corrupted");
+            }
+
+            auto response = AmqpClient::BasicMessage::Create(message->getPayload());
+
+            std::cout << "got message from: " << sender << std::endl;
+
+            connection->BasicPublish("", sender, response);
+            connection->BasicAck(envelope->GetDeliveryInfo(), false);
+
+            delete message;
+        } catch(...) {
+            cout << "error" << endl;
+            connect(); 
+           
+            std::cout << "after basic recover" << std::endl;
+            consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
+            std::cout << "basic recover" << std::endl;
+            connection->BasicRecover(consumer_tag);
+            cout << "error finished" << endl;
         }
-        catch (SizeMissmatchException &e)
-        {
-            message = new ErrorMessage(1, e.what());
-        }
-        catch (InputSizeMissmatchException &e)
-        {
-            message = new ErrorMessage(2, e.what());
-        }
-        catch (nlohmann::detail::type_error &e)
-        {
-            message = new ErrorMessage(3, "input message data corrupted");
-        }
-
-        auto response = AmqpClient::BasicMessage::Create(message->getPayload());
-
-        std::cout << "got message from: " << sender << std::endl;
-
-        connection->BasicPublish("", sender, response);
-        connection->BasicAck(envelope->GetDeliveryInfo(), false);
-
-        delete message;
     }
 }

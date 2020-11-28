@@ -19,6 +19,7 @@ class TLSController
 public:
     TLSController();
     void run();
+    void connect();
 
 private:
     struct InputParser

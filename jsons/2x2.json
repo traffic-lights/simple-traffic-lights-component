@@ -1,8 +1,8 @@
 {
-    "broker-address" : "rabbitmq.traffic.svc.cluster.local",  
+    "broker-address" : "reliable-rabbit-public",  
     "vhost-name": "traffily",
-    "username": "2x2_server",
-    "password": "tajnehaslo",
+    "username": "kaszper",
+    "password": "kaszper",
     "requests-queue": "2x2_requests",
     "model-path": "models/2x2.pt",
     "input-size": 13

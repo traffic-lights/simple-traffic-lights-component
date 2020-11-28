@@ -3,39 +3,35 @@ kind: StatefulSet
 metadata:
   name: rabbitmq
 spec:
-  serviceName: rabbitmq
+  podManagementPolicy: OrderedReady
+  # We want 3 RabbitMQ nodes
+  replicas: 3
   selector:
     matchLabels:
       app: rabbitmq
+  # This service is responsible for:
+  # * the network identity of the set
+  # * cluster formation
+  #
+  # Pod hostnames are set using the following naming convention:
+  #   podName.serviceName.default.svc.cluster.local
+  serviceName: reliable-rabbit
+  volumeClaimTemplates:
+  - metadata:
+      name: rabbitmq-data
+    spec:
+      storageClassName: ssd
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: "100Gi"
   template:
     metadata:
+      annotations:
+        prometheus.io/port: "15692"
+        prometheus.io/scrape: "true"
+      name: rabbitmq
       labels:
         app: rabbitmq
-    spec:
-      containers:
-        - name: rabbitmq
-          image: rabbitmq:3.8.9-management
-          ports:
-            - name: http
-              protocol: TCP
-              containerPort: 15672
-            - name: amqp
-              protocol: TCP
-              containerPort: 5672
-          livenessProbe:
-            exec:
-              command:
-                - "rabbitmq-diagnostics"
-                - "ping"
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            timeoutSeconds: 15
-          readinessProbe:
-            exec:
-              command:
-                - "rabbitmq-diagnostics"
-                - "check_port_connectivity"
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            timeoutSeconds: 15
             

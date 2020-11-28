@@ -60,5 +60,5 @@ RUN mkdir build \
 
 ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
 
-CMD ["./simple-traffic-lights-component", "jsons/2x2.json"]
+CMD ["./simple-traffic-lights-component"]
 
