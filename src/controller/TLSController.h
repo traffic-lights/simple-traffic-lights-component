@@ -19,7 +19,6 @@ class TLSController
 public:
     TLSController();
     void run();
-    void connect();
 
 private:
     struct InputParser
@@ -51,7 +50,15 @@ private:
 
     AmqpClient::Channel::ptr_t connection;
 
+    std::string address;
+    std::string vhost;
+    std::string username;
+    std::string password;
+    std::string model_path;
+    int input_size;
     std::string requests_queue;
 
     Model *model;
+
+    void connect();
 };

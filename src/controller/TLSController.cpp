@@ -1,20 +1,18 @@
 #include "TLSController.h"
+
 using namespace AmqpClient;
 using namespace std;
+
 TLSController::TLSController()
 {
-    connect();
-}
-
-void TLSController::connect() {
-    std::cout << "connect" << std::endl;
     auto config_path = std::getenv(CONFIG_PATH_VARIABLE);
 
-    if(!config_path){
+    if (!config_path)
+    {
         std::cerr << "missing environment variable: " << CONFIG_PATH_VARIABLE << std::endl;
         exit(1);
     }
-    
+
     std::cout << "path to config file: " << config_path << std::endl;
 
     std::ifstream file(config_path);
@@ -23,38 +21,60 @@ void TLSController::connect() {
 
     auto j = json::parse(buffer.str());
 
-    auto address = j["broker-address"].get<std::string>();
-    auto vhost = j["vhost-name"].get<std::string>();
-    auto username = j["username"].get<std::string>();
-    auto password = j["password"].get<std::string>();
-    auto model_path = j["model-path"].get<std::string>();
-    auto input_size = j["input-size"].get<int>();
+    address = j["broker-address"].get<std::string>();
+    vhost = j["vhost-name"].get<std::string>();
+    username = j["username"].get<std::string>();
+    password = j["password"].get<std::string>();
+    model_path = j["model-path"].get<std::string>();
+    input_size = j["input-size"].get<int>();
 
     requests_queue = j["requests-queue"].get<std::string>();
 
     model = new Model(model_path, input_size);
 
-    connection = AmqpClient::Channel::Create(address, 5672, username, password, vhost);
-    std::cout << "connected to: " << address << std::endl;
+    connect();
+}
+
+void TLSController::connect()
+{
+    std::cout << "connecting to: " << address << std::endl;
+    int retries = 0;
+    while(true){
+        if(retries > 5){
+            retries = 5;
+        }
+        int backoff = 10 * static_cast<int>(std::ceil(std::exp(retries)));
+        std::chrono::milliseconds timespan(backoff);
+        try{
+            connection = AmqpClient::Channel::Create(address, 5672, username, password, vhost);
+            break;
+        } catch(...){
+            retries +=1;
+            std::cout << "unable to connect. retrying ..." << std::endl;
+            std::this_thread::sleep_for(timespan);
+        }
+    }
+    std::cout << "connected" << std::endl;
 }
 
 void TLSController::run()
-{   
+{
     AmqpClient::Table qTable;
     qTable.insert(TableEntry(TableKey("x-queue-type"), TableValue("quorum")));
     connection->DeclareQueue(
-        requests_queue, 
+        requests_queue,
         false, // passive
         true,  // durable
         false, // exclusive
         false, // auto_delete
-        qTable
-    );
+        qTable);
 
-    auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
+    auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false);
 
     while (true)
-    {   try {
+    {
+        try
+        {
             auto envelope = connection->BasicConsumeMessage(consumer_tag);
             auto content = envelope->Message()->Body();
             auto sender = envelope->Message()->ReplyTo();
@@ -91,15 +111,17 @@ void TLSController::run()
             connection->BasicAck(envelope->GetDeliveryInfo(), false);
 
             delete message;
-        } catch(...) {
-            cout << "error" << endl;
-            connect(); 
-           
+        }
+        catch (...)
+        {
+            cout << "connection lost. reconnecting ..." << endl;
+            connect();
+
             std::cout << "after basic recover" << std::endl;
-            consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
+            consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false);
             std::cout << "basic recover" << std::endl;
-            connection->BasicRecover(consumer_tag);
-            cout << "error finished" << endl;
+            // connection->BasicRecover(consumer_tag);
+            cout << "reconnected." << endl;
         }
     }
 }
