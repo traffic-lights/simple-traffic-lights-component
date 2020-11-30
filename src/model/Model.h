@@ -22,7 +22,7 @@ public:
         torch::NoGradGuard no_grad_;
     };
 
-    ~Model();
+    ~Model() = default;
 
     int forward(std::vector<float> input);
 

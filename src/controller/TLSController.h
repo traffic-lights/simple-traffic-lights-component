@@ -24,6 +24,7 @@ private:
     struct InputParser
     {
         std::vector<float> input;
+        std::string timestamp;
 
         InputParser(std::string content) : input{}
         {
@@ -45,10 +46,15 @@ private:
             {
                 input.push_back(in_states[i] - out_states[i]);
             }
+
+            timestamp = j_content["timestamp"].get<std::string>();
         }
     };
 
     AmqpClient::Channel::ptr_t connection;
+
+    std::string consumer_tag;
+    std::string old_consumer_tag;
 
     std::string address;
     std::string vhost;
@@ -57,6 +63,10 @@ private:
     std::string model_path;
     int input_size;
     std::string requests_queue;
+    std::string responses_queue;
+    std::string responses_exchange;
+
+    bool reconnected;
 
     Model *model;
 

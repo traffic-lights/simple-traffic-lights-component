@@ -3,7 +3,7 @@
 using namespace AmqpClient;
 using namespace std;
 
-TLSController::TLSController() : reconnected{false}
+TLSController::TLSController() : consumer_tag{}, reconnected{false}
 {
     auto config_path = std::getenv(CONFIG_PATH_VARIABLE);
 
@@ -29,8 +29,6 @@ TLSController::TLSController() : reconnected{false}
     input_size = j["input-size"].get<int>();
 
     requests_queue = j["requests-queue"].get<std::string>();
-    responses_queue = j["responses-queue"].get<std::string>();
-    responses_exchange = j["responses-exchange"].get<std::string>();
 
     model = new Model(model_path, input_size);
 
@@ -69,6 +67,7 @@ void TLSController::run()
 {
     AmqpClient::Table qTable;
     qTable.insert(TableEntry(TableKey("x-queue-type"), TableValue("quorum")));
+
     connection->DeclareQueue(
         requests_queue,
         false, // passive
@@ -78,45 +77,38 @@ void TLSController::run()
         qTable);
 
     connection->DeclareQueue(
-        responses_queue,
+        "2x2_responses",
         false, // passive
         true,  // durable
         false, // exclusive
         false, // auto_delete
         qTable);
 
-    connection->DeclareExchange(
-        responses_exchange,
-        Channel::EXCHANGE_TYPE_DIRECT,
-        false, // passive
-        true,  // durable
-        false  // auto_delete
-    );
-
-    // auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
+    connection->DeclareExchange("responses", Channel::EXCHANGE_TYPE_DIRECT, false, true, false);
 
     while (true)
     {
         try
         {
-            if (reconnected)
-            {
-                connection->BasicRecover(consumer_tag);
-                reconnected = false;
-            }
+            // if (reconnected)
+            // {
+            //     connection->BasicRecover(consumer_tag);
+            //     std::cout << "recovering ..." << std::endl;
+            //     reconnected = false;
+            // }
 
             auto envelope = connection->BasicConsumeMessage(consumer_tag);
             auto content = envelope->Message()->Body();
             auto sender = envelope->Message()->ReplyTo();
 
-            Message *message = nullptr;
+            Message *message = new DefaultMessage();
 
             try
             {
                 InputParser *parser = new InputParser(content);
 
                 auto prediction = model->forward(parser->input);
-                message = new ValidMessage(0, prediction, parser->timestamp);
+                message = new ValidMessage(0, prediction);
 
                 delete parser;
             }
@@ -133,16 +125,11 @@ void TLSController::run()
                 message = new ErrorMessage(3, "input message data corrupted");
             }
 
-            if (!message)
-            {
-                message = new DefaultMessage();
-            }
-
             auto response = AmqpClient::BasicMessage::Create(message->getPayload());
 
             std::cout << "got message from: " << sender << std::endl;
 
-            connection->BasicPublish("", sender, response);
+            connection->BasicPublish("responses", sender, response);
             connection->BasicAck(envelope->GetDeliveryInfo(), false);
 
             delete message;
@@ -152,12 +139,6 @@ void TLSController::run()
             cout << "connection lost. reconnecting ..." << endl;
             connect();
             reconnected = true;
-
-            // std::cout << "after basic recover" << std::endl;
-            // consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
-            // std::cout << "basic recover" << std::endl;
-            // connection->BasicRecover(consumer_tag);
-            // cout << "reconnected." << endl;
         }
     }
 }
