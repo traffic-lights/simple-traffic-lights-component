@@ -33,3 +33,10 @@ update-brokers:
 	yq merge statefulset.rabbitmq-upgrade statefulset-new.yml \
 	| kubectl apply --filename -
 
+credentials:
+	kubectl create secret generic erlang-cookie \
+	--dry-run=client --output=yaml --from-literal=value="my_erlang_cookie_val" > roles/secret.erlang-cookie.yml \
+	&& kubectl create secret generic default-user \
+	--dry-run=client --output=yaml --from-literal=value="default_user = kaszper" > roles/secret.default-user.yml \
+	&& kubectl create secret generic default-pass \
+	--dry-run=client --output=yaml --from-literal=value="default_pass = kaszper" > roles/secret.default-pass.yml
