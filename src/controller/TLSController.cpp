@@ -52,6 +52,7 @@ void TLSController::connect()
         try
         {
             connection = AmqpClient::Channel::Create(address, 5672, username, password, vhost);
+            create_queues();
             consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
             break;
         }
@@ -65,20 +66,11 @@ void TLSController::connect()
     std::cout << "connected" << std::endl;
 }
 
-void TLSController::run()
-{
+void TLSController::create_queues() {
     AmqpClient::Table qTable;
     qTable.insert(TableEntry(TableKey("x-queue-type"), TableValue("quorum")));
     connection->DeclareQueue(
         requests_queue,
-        false, // passive
-        true,  // durable
-        false, // exclusive
-        false, // auto_delete
-        qTable);
-
-    connection->DeclareQueue(
-        responses_queue,
         false, // passive
         true,  // durable
         false, // exclusive
@@ -92,9 +84,10 @@ void TLSController::run()
         true,  // durable
         false  // auto_delete
     );
+}
 
-    // auto consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
-
+void TLSController::run()
+{
     while (true)
     {
         try

@@ -63,7 +63,7 @@ spec:
       containers:
       - name: rabbitmq
         # https://hub.docker.com/_/rabbitmq/
-        image: rabbitmq:3.8.9-management
+        image: rabbitmq:3.8.8-management
         command:
         - "rabbitmq-server"
         env:
@@ -233,6 +233,11 @@ spec:
               items:
               - key: value
                 path: cluster_name.conf
+          - configMap:
+              name: default-vhost
+              items:
+              - key: value
+                path: default_vhost.conf          
           - secret:
               name: default-user
               items:
@@ -306,7 +311,7 @@ spec:
       # * available to the rabbitmq container (shared empty dir mount)
       initContainers:
       - name: make-erlang-cookie-only-readable-by-rabbitmq
-        image: rabbitmq:3.8.9-management
+        image: rabbitmq:3.8.8-management
         volumeMounts:
         - name: erlang-cookie
           mountPath: /var/run/secrets/erlang-cookie

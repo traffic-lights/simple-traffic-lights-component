@@ -71,4 +71,5 @@ private:
     Model *model;
 
     void connect();
+    void create_queues();
 };
