@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: traffic-server-2x2
-        image: kaszper/traffic-component:latest
+        image: trafficlights/traffic-component:latest
         imagePullPolicy: Always
         env:
         - name: JSON_CONFIG_PATH
