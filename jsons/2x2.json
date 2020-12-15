@@ -4,8 +4,6 @@
     "username": "kaszper",
     "password": "kaszper",
     "requests-queue": "2x2_requests",
-    "responses-queue": "2x2_responses",
-    "responses-exchange": "responses",
     "model-path": "models/2x2.pt",
     "input-size": 13
 }

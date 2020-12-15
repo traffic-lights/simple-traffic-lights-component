@@ -25,6 +25,7 @@ private:
     {
         std::vector<float> input;
         std::string timestamp;
+        std::string junction_id;
 
         InputParser(std::string content) : input{}
         {
@@ -48,6 +49,8 @@ private:
             }
 
             timestamp = j_content["timestamp"].get<std::string>();
+            junction_id = j_content["junction_id"].get<std::string>();
+
         }
     };
 
@@ -63,8 +66,6 @@ private:
     std::string model_path;
     int input_size;
     std::string requests_queue;
-    std::string responses_queue;
-    std::string responses_exchange;
 
     bool reconnected;
 

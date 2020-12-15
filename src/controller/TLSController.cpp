@@ -29,8 +29,6 @@ TLSController::TLSController() : reconnected{false}
     input_size = j["input-size"].get<int>();
 
     requests_queue = j["requests-queue"].get<std::string>();
-    responses_queue = j["responses-queue"].get<std::string>();
-    responses_exchange = j["responses-exchange"].get<std::string>();
 
     model = new Model(model_path, input_size);
 
@@ -76,14 +74,6 @@ void TLSController::create_queues() {
         false, // exclusive
         false, // auto_delete
         qTable);
-
-    connection->DeclareExchange(
-        responses_exchange,
-        Channel::EXCHANGE_TYPE_DIRECT,
-        false, // passive
-        true,  // durable
-        false  // auto_delete
-    );
 }
 
 void TLSController::run()
@@ -109,7 +99,7 @@ void TLSController::run()
                 InputParser *parser = new InputParser(content);
 
                 auto prediction = model->forward(parser->input);
-                message = new ValidMessage(0, prediction, parser->timestamp);
+                message = new ValidMessage(0, prediction, parser->timestamp, parser->junction_id);
 
                 delete parser;
             }
