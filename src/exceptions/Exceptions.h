@@ -2,7 +2,7 @@
 
 #include <exception>
 
-class SizeMissmatchException : public std::exception
+class DifferentSizeException : public std::exception
 {
 public:
     const char *what() const throw()

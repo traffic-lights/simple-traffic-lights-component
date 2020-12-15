@@ -1,4 +1,5 @@
 #include "TLSController.h"
+#include "../parser/InputParser.hpp"
 
 using namespace AmqpClient;
 using namespace std;
@@ -103,7 +104,7 @@ void TLSController::run()
 
                 delete parser;
             }
-            catch (SizeMissmatchException &e)
+            catch (DifferentSizeException &e)
             {
                 message = new ErrorMessage(1, e.what());
             }
@@ -123,7 +124,7 @@ void TLSController::run()
 
             auto response = AmqpClient::BasicMessage::Create(message->getPayload());
 
-            std::cout << "got message from: " << sender << std::endl;
+            std::cout << "sending to: " << sender << std::endl;
 
             connection->BasicPublish("", sender, response);
             connection->BasicAck(envelope->GetDeliveryInfo(), false);
@@ -135,12 +136,6 @@ void TLSController::run()
             cout << "connection lost. reconnecting ..." << endl;
             connect();
             reconnected = true;
-
-            // std::cout << "after basic recover" << std::endl;
-            // consumer_tag = connection->BasicConsume(requests_queue, "", true, false, false, 0);
-            // std::cout << "basic recover" << std::endl;
-            // connection->BasicRecover(consumer_tag);
-            // cout << "reconnected." << endl;
         }
     }
 }
